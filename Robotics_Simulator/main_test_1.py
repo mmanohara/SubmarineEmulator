@@ -26,6 +26,8 @@ Things to consider:
     emulator of our system, and this will be an extremely useful tool for 
     comms; we can test different signal encoding mechanisms and ultimately
     decide on one to implement and test first.
+    
+    I'm gonna add a bogus comment here to demonstrate git.
 """
 import numpy as np
 import matplotlib.pyplot as plt
