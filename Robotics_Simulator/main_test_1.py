@@ -27,7 +27,7 @@ Things to consider:
     comms; we can test different signal encoding mechanisms and ultimately
     decide on one to implement and test first.
     
-    I'm gonna add a bogus comment here to demonstrate git.
+    Hydrophones are wack.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -106,7 +106,7 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
                            for i in range(len(times))])
     
     # Calculate the distance the wave travels
-    travel_distances = np.linalg.norm(sub1_poses - sub_position_2, axis=1)
+    travel_distances = np.linalg.norm(sub1_poses, axis=1)
     
     # times at which points are received is just distance divided by wave speed
     received_times = times + travel_distances / c
@@ -135,7 +135,7 @@ def main():
     lamb = c/freq
     # Set initial sub positions and velocities (can modify as necessary)
     sub_position_1 = np.array([0, 0])
-    sub_position_2 = np.array([4, 0])
+    sub_position_2 = np.array([6, 0])
     sub_velocity_1 = np.array([0, 0])
     sub_velocity_2 = np.array([0, 0])
     # Simulate and get the input and output waveforms
