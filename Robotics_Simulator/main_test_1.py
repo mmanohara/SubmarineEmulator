@@ -83,6 +83,17 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
         Number of points to ping from one sub to another, equally spaced out in
         the simulated time.
         The default is 1000.
+        
+    Operation:
+        The way the function works is that we generate a set of times that we 
+        send samples of the waveform from sub 1 to sub 2. That is, we generate
+        samples of a pure sine wave and the times corresponding to the samples.
+        We then calculate 2 things: first, the times that each sample get to
+        the second submarine; second, the amplitude of the sample as it gets
+        to the second submarine (because it will decrease in amplitude). We 
+        work in the reference frame of the receiving submarine because then
+        calculating the time the wave arrives is simply distance over velocity.
+        The amplitude scales as 1/r so we simply use that.
 
     Returns
     -------
@@ -101,11 +112,12 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
     # Calculate the initial position of sub 1 relative to sub 2
     sub1_init_pos = sub_position_1 - sub_position_2
     
-    # Positions of sub 1 every time it makes a ping.
+    # Relative positions of sub 1 every time it makes a ping.
     sub1_poses = np.array([sub1_init_pos + times[i]*sub1_rel_velo \
                            for i in range(len(times))])
     
-    # Calculate the distance the wave travels
+    # Calculate the distance the wave travels for each sample; axis=1 lets us
+    # calculate the distance for each sample.
     travel_distances = np.linalg.norm(sub1_poses, axis=1)
     
     # times at which points are received is just distance divided by wave speed
