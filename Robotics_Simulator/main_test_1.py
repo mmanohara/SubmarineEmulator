@@ -27,7 +27,7 @@ Things to consider:
     comms; we can test different signal encoding mechanisms and ultimately
     decide on one to implement and test first.
     
-    Hydrophones are wack.
+    Hydrophones are wack. Chase added this.
 """
 import numpy as np
 import matplotlib.pyplot as plt
