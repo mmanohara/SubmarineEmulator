@@ -28,6 +28,7 @@ Things to consider:
     decide on one to implement and test first.
 
     Hydrophones are wack.
+
 """
 import numpy as np
 import matplotlib.pyplot as plt
