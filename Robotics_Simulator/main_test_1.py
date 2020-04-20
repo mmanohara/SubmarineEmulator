@@ -46,7 +46,14 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
     '''
     Holy crap Anaconda Spyder is very nice at autogenerating these docstrings
     Anyways this is the simulation function. We can change the organization of
-    these simul
+    these simulations as we develop the code further.
+    
+    Problems:
+    ----------
+    The wave velocity also transforms when either of the subs move because the
+    wave velocity will be c in the rest frame of the transmitting sub. However,
+    when frame shifting the wave velocity changes (sound isn't light), so we
+    need to account for this.
 
     Parameters
     ----------
@@ -73,7 +80,7 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
 
     sub_velocity_2 : TYPE 2D (3D) numpy array
         DESCRIPTION.
-        Velocity of the second submarine. Currently not implemented.
+        Velocity of the second submarine. 
 
     simulated_time : TYPE, optional
         DESCRIPTION.
