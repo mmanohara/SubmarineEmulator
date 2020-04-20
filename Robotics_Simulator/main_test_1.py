@@ -115,7 +115,7 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
     # Generate a waveform
     times, input_waveform = fm.wave_gen_FM(
         [(20000, 0.00025), (40000, 0.0005), (20000, 0.00025)],
-        num_pts = 10000000)
+        num_pts = n_points / 0.001) #(number of points per unit time)
     #input_waveform = np.sin(2*np.pi*freq * times) # Need angular velocity for
                                                   # waveforms
     # For simplicity, calculate the relative velocity of sub 1 relative to sub 2.
