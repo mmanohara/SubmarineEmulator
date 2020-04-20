@@ -32,6 +32,7 @@ Things to consider:
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import waveform_generator_frequency_modulated as fm
 
 '''
 IMPORTANT NOTE: ALL UNITS ARE IN SI STANDARD UNITS. Thus, speed is in m/s,
@@ -104,8 +105,9 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
 
     '''
     lamb = c / freq # wavelength
-    times = np.linspace(0, simulated_time, n_points)
-    input_waveform = np.sin(2*np.pi*freq * times) # Need angular velocity for
+    # Generate a waveform
+    times, input_waveform = fm.wave_gen_FM([(20000, 0.00025), (40000, 0.0005), (20000, 0.00025)])
+    #input_waveform = np.sin(2*np.pi*freq * times) # Need angular velocity for
                                                   # waveforms
     # For simplicity, calculate the relative velocity of sub 1 relative to sub 2.
     sub1_rel_velo = sub_velocity_1 - sub_velocity_2
@@ -148,8 +150,8 @@ def main():
     lamb = c/freq
     # Set initial sub positions and velocities (can modify as necessary)
     sub_position_1 = np.array([0, 0])
-    sub_position_2 = np.array([6, 0])
-    sub_velocity_1 = np.array([0, 0])
+    sub_position_2 = np.array([c/5, 0])
+    sub_velocity_1 = np.array([-10, 0])
     sub_velocity_2 = np.array([0, 0])
     # Simulate and get the input and output waveforms
     in_, out = simulate(c, freq, sub_position_1, sub_position_2, \
