@@ -1,0 +1,9 @@
+.\targets\stm32f429_discovery\ad9850.o: User\AD9850.c
+.\targets\stm32f429_discovery\ad9850.o: User\stm32f4xx.h
+.\targets\stm32f429_discovery\ad9850.o: ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Include\core_cm4.h
+.\targets\stm32f429_discovery\ad9850.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\targets\stm32f429_discovery\ad9850.o: ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Include\core_cmInstr.h
+.\targets\stm32f429_discovery\ad9850.o: ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Include\core_cmFunc.h
+.\targets\stm32f429_discovery\ad9850.o: ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Include\core_cmSimd.h
+.\targets\stm32f429_discovery\ad9850.o: C:\Users\mohit\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.14.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h
+.\targets\stm32f429_discovery\ad9850.o: User\stm32f4xx_conf.h
