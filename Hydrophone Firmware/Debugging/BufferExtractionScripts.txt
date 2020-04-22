@@ -1,0 +1,11 @@
+FUNC void displayvalues(void) { int idx; exec("log > ChDValues.log"); for (idx = 0; idx < 100; idx++) { printf ("%d\n", dataBuffer[idx]); } exec("log off"); }
+
+FUNC void displayvaluesf(void) { int idx; exec("log > ChDValues.log"); for (idx = 0; idx < 100; idx++) { printf ("%f\n", dataBufferf[idx]); } exec("log off"); }
+
+FUNC void displayvaluesf(void) { int idx; exec("log > ChDValues.log"); for (idx = 0; idx < 1000; idx++) { printf ("%f\n", dataBufferAf[idx]); } exec("log off"); }
+
+FUNC void displayvaluesf(void) { int idx; exec("log > ChDValues.log"); for (idx = 0; idx < 1000; idx++) { printf ("%f\n", dataBufferBf[idx]); } exec("log off"); }
+
+FUNC void displayvaluesf(void) { int idx; exec("log > ChDValues.log"); for (idx = 0; idx < 1000; idx++) { printf ("%f\n", dataBufferCf[idx]); } exec("log off"); }
+
+FUNC void displayvaluesf(void) { int idx; exec("log > ChDValues.log"); for (idx = 0; idx < 1000; idx++) { printf ("%f\n", dataBufferDf[idx]); } exec("log off"); }

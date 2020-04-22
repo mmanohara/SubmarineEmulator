@@ -1,6 +1,0 @@
--c --cpu Cortex-M4.fp.sp -D__EVAL -g -O2 --apcs=interwork -I .\User -I ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\STM32F4xx_StdPeriph_Driver\inc -I ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\STM32F4xx_StdPeriph_Driver\src -I ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Device\ST\STM32F4xx\Include -I ..\00-STM32F429_LIBRARIES -I ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Include -I ..\00-STM32F4xx_STANDARD_PERIPHERAL_DRIVERS\CMSIS\Device\ST\STM32F4xx\Source\Templates\arm -I ..\TM
--I.\RTE\_STM32F429-Discovery
--IC:\Users\mohit\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.14.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
--IC:\Keil_v5\ARM\CMSIS\Include
--D__UVISION_VERSION="529" -DSTM32F429xx -DSTM32F429_439xx -DUSE_STDPERIPH_DRIVER -DSTM32F4XX -D__ASSEMBLY__ -DKEIL_IDE -DTM_DISCO_STM32F429_DISCOVERY
--o .\targets\stm32f429_discovery\tm_stm32f4_mco_output.o --omf_browse .\targets\stm32f429_discovery\tm_stm32f4_mco_output.crf --depend .\targets\stm32f429_discovery\tm_stm32f4_mco_output.d "..\00-STM32F429_LIBRARIES\tm_stm32f4_mco_output.c"
