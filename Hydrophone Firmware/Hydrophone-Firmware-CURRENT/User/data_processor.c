@@ -18,6 +18,7 @@ float NORMALIZED_TRIGGER_THRESHOLD;
 float TRIGGER_THRESHOLD;
 float side_length = SIDE_LENGTH;
 
+/** woot doot this is Eilleen testing out github perms**/
 /** Precompute sin and cos with frequency equal to SIGNAL_FREQ_HZ, for 1ms worth of data at a rate equal to SAMPLING_FREQ_HZ
 	* It assumes SIGNAL_FREQ_HZ and SAMPLING_FREQ_HZ are integer multiples of 1000 to gaurentee that the table is periodic. Otherwise it will silently fail */
 float sinTable[WINDOW_LEN], cosTable[WINDOW_LEN];
