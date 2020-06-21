@@ -13,41 +13,54 @@ import waveform_generator_phase_modulated as pm
 
 SPEED_OF_SOUND = 1480 # meters per second
 
-def gen_doa_waveform(doa=np.array([0, 0, 1]), freq=30000, time_length = 0.001, 
+def gen_doa_waveform(doa=np.array([0, 0, 1]), freq=30000, time_length = 0.003, 
                      spacing = 0.01778, time_shift='rand'):
     """
     
 
     Parameters
     ----------
-    angle : 3-vector or DOA
-       The angle at which the incoming waveform is arriving (x, y, z). Assume the 
-       following coordinate system with hydrophone positions:
-           y
-           |
-           |
-        1  |  2
-           |
-    _____Z(.)__________x
-           |
-        4  |  3
-           |
+    doa : numpy array 3-vector
+        This describes in x, y, and z the direction of arrival of the ping
+        signal. The coordinate system is
         
-    time_shift : float, optional
-        Global time shift of all waveforms, corresponding to shift from 
-        origin of wave. Default is randomly generated.
+        y
+        |
+        |
+     1  |  2
+        |
+________.________x
+        |z
+     4  |  3
+        | 
+        |
+        
+    The doa will get normalized, so its norm doesn't matter.
+    freq : Float, units: Hz
+        Frequency of the wave to be generated.
+    time_length : Float, units: s
+        Time length for the wave to be generated. Default is 3 ms.
+    spacing : Float, units: m
+        Spacing between the hydrophones. The default is 0.01778, which is 0.7in.
+    time_shift : Float, units: s
+        Global time shift for all input waves. The default is a random setting.
 
     Returns
     -------
-    Tuple of lists of arrays. First is the 4 times arrays, second is the 4 
-    waveform arrays.
+    times
+        A list of times at which sampled waveforms appear. There are 4 of these
+        each corresponding to one of the hydrophones.
+    waves
+        A list of the actual waveforms at each of the hydrophones. Given that
+        this is assumed to be a plane wave and the hydrophones don't affect 
+        the wave at all by assumption, it's the same for all four.
     """
     # normalize doa
     ndoa = doa / np.linalg.norm(doa)
     if time_shift == 'rand':
         time_shift = 3*np.random.rand()
     # Assume that incident wave is at point 4.
-    times4, waves4 = pm.wave_gen_phase_modulated([time_length], freq=freq, num_pts=1000000)
+    times4, waves4 = pm.wave_gen_phase_modulated([time_length], freq=freq, num_pts=3000000)
     # Global time shift
     times4 += time_shift * np.ones(times4.shape)
     # Generate individual time shifts based on their distance and direction.
