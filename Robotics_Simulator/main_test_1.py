@@ -32,7 +32,8 @@ Things to consider:
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import waveform_generator_frequency_modulated as fm
+from wavegen import waveform_generator_frequency_modulated as fm
+
 
 '''
 IMPORTANT NOTE: ALL UNITS ARE IN SI STANDARD UNITS. Thus, speed is in m/s,
@@ -47,7 +48,7 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
     Holy crap Anaconda Spyder is very nice at autogenerating these docstrings
     Anyways this is the simulation function. We can change the organization of
     these simulations as we develop the code further.
-    
+
     Problems:
     ----------
     The wave velocity also transforms when either of the subs move because the
@@ -80,7 +81,7 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
 
     sub_velocity_2 : TYPE 2D (3D) numpy array
         DESCRIPTION.
-        Velocity of the second submarine. 
+        Velocity of the second submarine.
 
     simulated_time : TYPE, optional
         DESCRIPTION.
@@ -114,8 +115,8 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
     lamb = c / freq # wavelength
     # Generate a waveform
     times, input_waveform = fm.wave_gen_FM(
-        [(20000, 0.00025), (40000, 0.0005), (20000, 0.00025)],
-        num_pts = n_points / 0.001) #(number of points per unit time)
+        [(0.00025, 20000), (0.0005, 40000), (0.00025, 20000)],
+        num_pts = n_points) #(number of points per wave segment)
     #input_waveform = np.sin(2*np.pi*freq * times) # Need angular velocity for
                                                   # waveforms
     # For simplicity, calculate the relative velocity of sub 1 relative to sub 2.
@@ -153,16 +154,16 @@ def main():
 
     '''
     c = speed_of_sound
-    # Frequencies are on the order of kilohertz so we will use those
+    # Frequencies are on the order of kilohertz so we will use those.
     freq = 30000
-    # Calculate the wavelength in case it's used for something
+    # Calculate the wavelength in case it's used for something.
     lamb = c/freq
-    # Set initial sub positions and velocities (can modify as necessary)
+    # Set initial sub positions and velocities (can modify as necessary).
     sub_position_1 = np.array([0, 0])
     sub_position_2 = np.array([c/5, 0])
     sub_velocity_1 = np.array([-10, 0])
     sub_velocity_2 = np.array([0, 0])
-    # Simulate and get the input and output waveforms
+    # Simulate and get the input and output waveforms.
     in_, out = simulate(c, freq, sub_position_1, sub_position_2, \
              sub_velocity_1, sub_velocity_2)
     # Plot the waveforms.
