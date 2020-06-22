@@ -29,7 +29,7 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
 
     Parameters
     ----------
-    wave_list : 1D array-like of 4-tuples
+    wave_segments : 1D array-like of 4-tuples
         Each tuple represents a single wave segment, with the duration,
         frequency, amplitude, and phase shift specified by the entries
         in that order. The default is [].
@@ -64,7 +64,7 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
             2 * np.pi * (frequency * wave_times + phase_shift / 360)
         )
 
-        # Concatenate generated wave with existing waveform.
+        # Concatenate generated wave segment with existing waveform.
         waveform = np.concatenate((waveform, wave))
 
     return (times, waveform)
