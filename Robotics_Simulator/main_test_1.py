@@ -32,7 +32,7 @@ Things to consider:
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from wavegen import waveform_generator_frequency_modulated as fm
+from wave_gen import wave_gen
 
 
 '''
@@ -114,9 +114,11 @@ def simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, \
     '''
     lamb = c / freq # wavelength
     # Generate a waveform
-    times, input_waveform = fm.wave_gen_FM(
-        [(0.00025, 20000), (0.0005, 40000), (0.00025, 20000)],
-        num_pts = n_points) #(number of points per wave segment)
+    times, input_waveform = wave_gen(
+        [(0.00025, 20000, 1, 0), (0.0005, 40000, 1, 0),
+         (0.00025, 20000, 1, 0)],
+        num_pts = n_points         # (number of points per wave segment)
+    )
     #input_waveform = np.sin(2*np.pi*freq * times) # Need angular velocity for
                                                   # waveforms
     # For simplicity, calculate the relative velocity of sub 1 relative to sub 2.
