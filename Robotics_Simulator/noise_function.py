@@ -9,28 +9,44 @@ This is a function to add noise to the waveforms.
 
 import numpy as np
 import matplotlib.pyplot as plt
-import waveform_generator_frequency_modulated as fm
+from main_test_1 import simulate
 
+'''
+IMPORTANT NOTE: ALL UNITS ARE IN SI STANDARD UNITS. Thus, speed is in m/s,
+frequency is in Hz, positions in m, etc.
+'''
+# Speed of sound in water
+speed_of_sound = 1480
 
 #Function to add noise to an input waveform
-def noise(input_wave,noise):
+def noise(times,input_wave,noise):
 
     output_waveform = input_wave + np.random.normal(0,noise,size=len(input_wave))
     
-    return output_waveform
-
+    return (times,output_waveform)
 
 # Code testing region.
 if __name__ == '__main__':
 
-    #Generate a waveform
-    num_pts = 1000
-    times, input_waveform = fm.wave_gen_FM([(10000, 1)], num_pts)
-    noise_variance = 0.5
+    c = speed_of_sound
+    freq = 30000
+    noise_variance = 0.0005
+    # Set initial sub positions and velocities
+    sub_position_1 = np.array([0, 0])
+    sub_position_2 = np.array([c/5, 0])
+    sub_velocity_1 = np.array([-10, 0])
+    sub_velocity_2 = np.array([0, 0])
+    # Simulate input and output waveforms
+    in_, out = simulate(c, freq, sub_position_1, sub_position_2, sub_velocity_1, sub_velocity_2)
     
-    output_waveform = noise(input_waveform,noise_variance)
+    #Add noise to output waveform
+    out = noise(out[0],out[1],noise_variance)    
+    
     plt.figure()
-    plt.plot(times, output_waveform)
-    #plt.plot(times, input_waveform)
-    plt.legend
-    plt.show()
+    plt.plot(out[0],out[1], c='r', label="Output waveform")
+    plt.legend()
+    
+    plt.figure()
+    plt.plot(in_[0],in_[1], c='b', label="Input waveform")
+    plt.legend()
+    
