@@ -66,7 +66,6 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
 
         # Update phase.
         phase = (phase + phase_shift) % 360
-        print(phase)
 
         # Generate sinusoidal segment.
         wave = amplitude * np.sin(
