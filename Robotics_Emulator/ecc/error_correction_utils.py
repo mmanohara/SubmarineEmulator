@@ -110,3 +110,36 @@ def hamming_parity_check_matrix(n):
     # Convert matrix elements from type str to int.
     # This might be a very stupid way to do this. I don't know.
     return parity_check_matrix.astype(float).astype(int)
+
+
+def multiply_binary_finite_field_matrices(left, right):
+    """
+    Evaluate the product of two binary matrices using finite field operations.
+
+    Parameters
+    ----------
+    left : 2D array_like
+        The left multiplicand, a binary matrix with m rows and n columns.
+    right : 2D array_like
+        The rught muliplicand, a binary matrix with n rows and p columns.
+
+    Returns
+    -------
+    product : 2D numpy array
+        A binary matrix with m rows and p columns (see parameters)
+        containing the product of left and right.
+
+    """
+    if left.shape[1] != right.shape[0]:
+        raise ValueError('The number of columns in the left operand must'
+                         ' equal the number of rows in the right operand.')
+
+    product = np.empty((left.shape[0], right.shape[1]), dtype=int)
+
+    for i in range(left.shape[0]):
+        for j in range(right.shape[1]):
+            product[i][j] = left[i][0] * right[0][j]
+            for entry in range(1, left.shape[1]):
+                product[i][j] ^= left[i][entry] * right[entry][j]
+
+    return product

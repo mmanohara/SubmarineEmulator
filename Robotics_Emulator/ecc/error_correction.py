@@ -12,7 +12,7 @@ error-correcting schemes.
 
 import numpy as np
 
-#import error_correction_utils as utils
+import error_correction_utils as utils
 
 
 def repetition_encoder(message, num_repetitions):
@@ -129,13 +129,16 @@ def hamming_encoder(message, n=3):
                          ' bits per codeword.')
 
     code = ''
-   # generator_matrix = utils.hamming_generator_matrix(n)
+    generator_matrix = utils.hamming_generator_matrix(n)
 
     # Loop through each chunk of data bits by index.
     for i in range(0, len(message), num_data_bits):
         # Append the next codeword, computed by multiplying the data chunk
         # by the generator matrix.
-        # code += np.array([list(message[i:i+num_data_bits])]).astype(np.intc) @ generator_matrix)
-        pass
+        codeword = utils.multiply_binary_finite_field_matrices(
+             np.array([list(message[i:i+num_data_bits])]).astype(np.intc),
+             generator_matrix
+        )
+        code += ''.join([str(bit) for bit in np.nditer(codeword)])
 
     return code
