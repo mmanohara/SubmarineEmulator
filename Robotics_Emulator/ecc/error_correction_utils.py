@@ -130,16 +130,22 @@ def multiply_binary_finite_field_matrices(left, right):
         containing the product of left and right.
 
     """
-    if left.shape[1] != right.shape[0]:
+    # Convert inputs to numpy arrays.
+    left_arr = np.array(left)
+    right_arr = np.array(right)
+
+    if len(left_arr.shape) != 2 or len(right_arr.shape) != 2:
+        raise ValueError('Inputs must be 2D array_like objects.')
+    if left_arr.shape[1] != right_arr.shape[0]:
         raise ValueError('The number of columns in the left operand must'
                          ' equal the number of rows in the right operand.')
 
-    product = np.empty((left.shape[0], right.shape[1]), dtype=int)
+    product = np.empty((left_arr.shape[0], right_arr.shape[1]), dtype=int)
 
-    for i in range(left.shape[0]):
-        for j in range(right.shape[1]):
-            product[i][j] = left[i][0] * right[0][j]
-            for entry in range(1, left.shape[1]):
-                product[i][j] ^= left[i][entry] * right[entry][j]
+    for i in range(left_arr.shape[0]):
+        for j in range(right_arr.shape[1]):
+            product[i][j] = left_arr[i][0] * right_arr[0][j]
+            for entry in range(1, left_arr.shape[1]):
+                product[i][j] ^= left_arr[i][entry] * right_arr[entry][j]
 
     return product
