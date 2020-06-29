@@ -20,22 +20,26 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
     """
     Stitch together a series of sinusoids of based on the given parameters.
 
-    Each segment is specified by its length, frequency, amplitude, and
-    phase to allow for phase, amplitude, or frequency modulation or some
-    combination.
+    Each segment is specified by its duration, frequency, amplitude, and
+    relative phase to allow for phase, amplitude, or frequency modulation
+    or some combination. The input format for specifying each wave segment is
+    (duration, frequency, amplitude, relative phase). The phase for each wave
+    segment is relative to the previous segment (with the phase initialized to
+    zero for the first segment).
 
-    Phase smoothing is available, but obviously not compatible with any form of
-    phase modulation.
+    Smoothing using phase shifting is available, but it is obviously not
+    compatible with any form of phase modulation.
 
     Parameters
     ----------
     wave_segments : 1D array-like of 4-tuples
         Each tuple represents a single wave segment, with the duration,
-        frequency, amplitude, and phase shift specified by the entries
-        in that order. The default is [].
+        frequency, amplitude, and the phase shift (relative to the previous
+        segment) specified by the entries in that order. The default is [].
 
     num_pts : positive int
-        Number of points to generate for each wave. The default is 1000.
+        Number of points to generate for each wave segment.
+        The default is 1000.
 
     Returns
     -------
@@ -43,11 +47,12 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
         List of times corresponding to each point in the combined waveform.
 
     waveform : 1D numpy array
-        List of amplitudes comprising the combined waveform.
+        List of magnitudes comprising the combined waveform.
 
     """
     waveform = np.zeros(1)
     times = np.zeros(1)
+    phase = 0
 
     # Generate each wave and concatenate with existing waveform.
     for time, frequency, amplitude, phase_shift in wave_segments:
@@ -59,9 +64,12 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
         # Concatenate list of times with existing list.
         times = np.concatenate((times, wave_times))
 
+        # Update phase.
+        phase = (phase + phase_shift) % 360
+
         # Generate sinusoidal segment.
         wave = amplitude * np.sin(
-            2 * np.pi * (frequency * wave_times + phase_shift / 360)
+            2 * np.pi * (frequency * wave_times + phase / 360)
         )
 
         # Concatenate generated wave segment with existing waveform.
