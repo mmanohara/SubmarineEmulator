@@ -32,7 +32,7 @@ def repetition_encoder(message, num_repetitions):
         Input vector with each bit repeated 'num_repetitions' times.
 
     """
-    if num_repetitions >= len(message):
+    if num_repetitions > len(message):
         raise ValueError('Error: the number of repetitions cannot be greater'
                          ' than the length of the input.')
     for bit in message:
@@ -62,7 +62,7 @@ def repetition_decoder(code, num_repetitions):
         bit cannot be determined or if an unknown bit ('x') is passed in).
 
     """
-    if num_repetitions >= len(code):
+    if num_repetitions > len(code):
         raise ValueError('The number of repetitions cannot be greater'
                          ' than the length of the input.')
     if len(code) % num_repetitions != 0:
