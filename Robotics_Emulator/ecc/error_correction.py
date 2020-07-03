@@ -235,3 +235,37 @@ def hamming_decoder(code, n=3):
         message += data
 
     return message
+
+
+# Code testing region.
+if __name__ == '__main__':
+    num_tests = 10000
+
+    # Test Hamming (7,4) encoder/decoder.
+    for test in range(num_tests):
+        message = ''
+
+        # Generate a random 40-bit message, which will yield 10 codewords for
+        # a Hamming (7,4) code.
+        for bit in range(40):
+            message += np.random.choice(['0', '1'])
+
+        # Encode the message.
+        code = hamming_encoder(message)
+
+        code_distorted = ''
+
+        # Create a distorted code by randomly flipping one bit in each word.
+        for i in range(0, len(code), 7):
+            index = np.random.randint(0, 6)
+            code_distorted += (
+                code[i:i+index]
+                + ('0' if code[i+index] == '1' else '1')
+                + code[i+index+1:i+7]
+            )
+
+        # Decode the code and the distorted code and check that both yield the
+        # original message.
+        assert hamming_decoder(code) == message \
+            and hamming_decoder(code_distorted) == message, \
+            'WRONG. YOUR CODE IS WRONG. SAD.'
