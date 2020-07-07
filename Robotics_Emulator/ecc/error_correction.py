@@ -16,7 +16,7 @@ https://www.youtube.com/playlist?list=PLJHszsWbB6hqkOyFCQOAlQtfzC1G9sf2_
 
 import numpy as np
 
-import error_correction_utils as utils
+import ecc.error_correction_utils as utils
 
 
 def repetition_encoder(message, num_repetitions):
