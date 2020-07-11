@@ -108,7 +108,7 @@ if __name__ == '__main__':
     receiver_orientation_initial = np.array([1, 0])
     transmitter_velocity = np.array([-10, 0])
     receiver_velocity = np.array([0, 0])
-    receiver_spacing = 0.5
+    receiver_spacing = 0.0254
     
     # Emulate input and output waveforms
     in_, output_times, output_waveforms = channel(
@@ -123,7 +123,11 @@ if __name__ == '__main__':
     
     #Plot the outputs (0: center, 1: front left, 2: back left, 3: back right, 
     #4: front right)
+    fig = plt.figure()
     for i in range(5):
-        plt.figure()
-        plt.plot(output_times[i], output_waveforms[i], c = 'b', label = 'Output ' + str(i) + ' Waveform')
+        
+        plt.plot(output_times[i], output_waveforms[i], label = 'Output ' + str(i) + ' Waveform')
         plt.legend()
+    
+    #Set the x axis limits
+    fig.axes[0].set_xlim(0.2, 0.2001)
