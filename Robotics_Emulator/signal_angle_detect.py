@@ -100,20 +100,22 @@ def find_phase(freq, times, waves):
     omega = 2 * np.pi * freq
     
     # Trim this signal to the first ms, which is all we need
-    times = times[times < 0.001]
+    times = times[times < times[0] + 0.001]
     if (times.size < 1):
         # If no measurements taken in the first millisecond, something wrong
-        return null;
+        print('ah shit')
+        return 0; # what should I do?
     
     # Trim the wave using the times as a guide
     waves = np.resize(waves, times.size)
     
-    kI = np.sum(waves * numpy.cos(omega * times))
-    kQ = np.sum(waves * numpy.sin(omega * times))
+    # sums to find kI and kQ for Fourier inner product
+    kI = np.sum(waves * np.cos(omega * times))
+    kQ = np.sum(waves * np.sin(omega * times))
     
     # Am I correct in using arctan2 here?
-    phase = np.arctan2(kI/kQ)
-    
+    phase = np.arctan2(kI, kQ)
+
     return phase
 
 def signal_angle_detect(c, freq, d, times, waves):
