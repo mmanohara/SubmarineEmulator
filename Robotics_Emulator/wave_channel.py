@@ -24,8 +24,8 @@ SPEED_OF_SOUND = 1480
 
 #Function to calculate recieved waveforms at the hydrophone locations
 def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
-            spacing, transmitter_velo, receiver_velo, noise,
-            duration=0.001, n_points=1000):
+            receiver_orientation, spacing, transmitter_velo, receiver_velo, 
+            noise, duration=0.001, n_points=1000):
     
     #Calculate the initial positions of the 4 reciever (hydrophone) positions.
     #They are arranged in a d by d square with reciever_center_pos_init at the center,
@@ -35,7 +35,18 @@ def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
     #the positive x-direction (right). So, looking at the sub, the front left 
     #would be the upper rightmost corner. 
     
-    ######## Will need to code in orientation as a parameter later! ##########
+    #Make reciver_orientation into a unit vector
+    receiver_orientation_normalized = receiver_orientation/np.linalg.norm(receiver_orientation)
+    #Make a vector of length d/2 pointing in the same direction as the 
+    #orientation vector
+    r_orient_d_over_2 = receiver_orientation_normalized * spacing/2
+    #Make another vector of length d/2 that is perpendicular to the orientation
+    #vector by rotating it 90 degress counterclockwise.
+    r_perp_orient_d_over_2 = np.array([-r_orient_d_over_2[1], r_orient_d_over_2[0]])
+    #To find the four hydrophone positions, we will have to add both of the
+    #above vectors to the center point and then rotate that 90 degrees to get
+    #all 4 points.
+    r_hydrophone_pos_vector = r_orient_d_over_2 + r_perp_orient_d_over_2
     
     #This array will hold the values of the 5 receiver positions with these
     #indexes:
@@ -47,23 +58,13 @@ def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
     receiver_positions = [None] * 5
     
     #Setting all the receiver position values
-    receiver_positions[0] = receiver_center_pos_init
-    receiver_positions[1] = np.array([receiver_center_pos_init[0] \
-                                             + spacing/2, \
-                                            receiver_center_pos_init[1] \
-                                            + spacing/2])
-    receiver_positions[2] = np.array([receiver_center_pos_init[0] \
-                                             - spacing/2, \
-                                            receiver_center_pos_init[1] \
-                                            + spacing/2])
-    receiver_positions[3] = np.array([receiver_center_pos_init[0] \
-                                             - spacing/2, \
-                                            receiver_center_pos_init[1] \
-                                            - spacing/2])
-    receiver_positions[4] = np.array([receiver_center_pos_init[0] \
-                                             + spacing/2, \
-                                            receiver_center_pos_init[1] \
-                                            - spacing/2])
+    receiver_positions[0] = receiver_center_pos_init    
+    
+    for i in range(4):
+        receiver_positions[i+1] = receiver_center_pos_init + r_hydrophone_pos_vector
+        #Rotate the hydrophone_pos_vector by 90 degrees to get to the next position
+        r_hydrophone_pos_vector = np.array([-r_hydrophone_pos_vector[1], \
+                                            r_hydrophone_pos_vector[0]])
     
     #Use emulate to get the output waveforms at each receiver position and 
     #then add noise
@@ -93,7 +94,7 @@ def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
         #   3: back right
         #   4: front right
         
-    return in_, output_times, output_waveforms   
+    return in_, output_times, output_waveforms
 
 # Code testing region.
 if __name__ == '__main__':
@@ -104,22 +105,29 @@ if __name__ == '__main__':
     # Set initial sub positions and velocities
     transmitter_position_initial = np.array([0, 0])
     receiver_position_initial = np.array([SPEED_OF_SOUND/5, 0])
+    receiver_orientation_initial = np.array([1, 0])
     transmitter_velocity = np.array([-10, 0])
     receiver_velocity = np.array([0, 0])
-    receiver_spacing = 0.5
+    receiver_spacing = 0.0254
     
     # Emulate input and output waveforms
     in_, output_times, output_waveforms = channel(
     SPEED_OF_SOUND, frequency, transmitter_position_initial, receiver_position_initial,
-    receiver_spacing, transmitter_velocity, receiver_velocity, noise_variance)
-     
+    receiver_orientation_initial, receiver_spacing, transmitter_velocity, 
+    receiver_velocity, noise_variance)
+    
+
     plt.figure()
     plt.plot(in_[0], in_[1], c='r', label="Input waveform")
     plt.legend()
     
     #Plot the outputs (0: center, 1: front left, 2: back left, 3: back right, 
     #4: front right)
+    fig = plt.figure()
     for i in range(5):
-        plt.figure()
-        plt.plot(output_times[i], output_waveforms[i], c = 'b', label = 'Output ' + str(i) + ' Waveform')
+        
+        plt.plot(output_times[i], output_waveforms[i], label = 'Output ' + str(i) + ' Waveform')
         plt.legend()
+    
+    #Set the x axis limits
+    fig.axes[0].set_xlim(0.2, 0.2001)
