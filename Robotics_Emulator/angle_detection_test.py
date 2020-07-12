@@ -60,7 +60,7 @@ ________.________x
     if time_shift == 'rand':
         time_shift = 3*np.random.rand()
     # Assume that incident wave is at point 4.
-    times4, waves4 = pm.wave_gen_phase_modulated([time_length], freq=freq, num_pts=3000000)
+    times4, waves4 = pm.wave_gen_phase_modulated([(time_length, 0)], freq=freq, num_pts=3000000)
     # Global time shift
     times4 += time_shift * np.ones(times4.shape)
     # Generate individual time shifts based on their distance and direction.
