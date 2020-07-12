@@ -10,6 +10,7 @@ This code is to use for testing the angle detection algorithm.
 import numpy as np
 import matplotlib.pyplot as plt
 import waveform_generator_phase_modulated as pm
+import signal_angle_detect as sad
 
 SPEED_OF_SOUND = 1480 # meters per second
 
@@ -86,4 +87,9 @@ if __name__=='__main__':
     plt.xlabel("Time (s)")
     plt.ylabel("Voltages (V)")
     plt.legend()
+    
+    chase_doa = sad.signal_angle_detect(SPEED_OF_SOUND, freq, spacing, times, waves)
+    
+    print(doa)
+    print(chase_doa)
     
