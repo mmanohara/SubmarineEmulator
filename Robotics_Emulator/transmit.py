@@ -19,9 +19,9 @@ import ecc
 from wave_gen import wave_gen
 
 
-def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=None,
-             modulation_type, modulation_frequencies=None, relative_phase=180,
-             amplitude=1, num_pts=1000):
+def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=0,
+             modulation_type, modulation_frequencies=(0, 0),
+             relative_phase=180, frequency=0, amplitude=1, num_pts=1000):
     """
     Encode the given bitsteam into a modulated waveform.
 
@@ -44,7 +44,7 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=None,
         The appropriate parameter for the chosen type of encoding, if
         applicable. For a (2**n - 1, 2**n - n -1) Hamming code, this parameter
         is n, and for a repetition code, this parameter is the number of
-        repetitions. The default is None.
+        repetitions. The default is 0.
 
     modulation_type : str, {'FM', 'PM'}
         The type of modulation to use to transmit the encoded signal.
@@ -53,13 +53,19 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=None,
 
     modulation_frequencies : 2-tuple of float, optional
         The frequencies for '0' and '1', respectively, when using frequency
-        modulation. This argument is ignored is frequency modulation is not
-        used. The default is None (for when frequency modulation is not used).
+        modulation. This argument is ignored if frequency modulation is not
+        used. The default is (0, 0)
+        (for when frequency modulation is not used).
 
     relative_phase : float, optional
         The relative phase between different bits when using phase modulation.
         This parameter is ignored if phase modulation is not used.
         The default is 180.
+
+    frequency : float, optional
+        The frequency for a phase-modulated waveform. This argument is ignored
+        if phase modulation is not used. The default is 0
+        (for when phase modulation is not used).
 
     amplitude : float, optional
         The amplitude of the output waveform. The default is 1.
@@ -117,6 +123,7 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=None,
     # parameters of each such segment are stored  in this list and
     # subsequently used to generate the output waveform.
     wave_segments = []
+
     bit_duration = 1 / bit_rate
 
     # Convert the encoded message bit by bit into  wave
@@ -145,7 +152,7 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=None,
         prev_bit = code[0]
         for bit in code:
             wave_segments.append(
-                (bit_duration, bit_rate, amplitude,
+                (bit_duration, frequency, amplitude,
                  relative_phase if bit != prev_bit else 0)
             )
             prev_bit = bit
@@ -173,13 +180,13 @@ if __name__ == '__main__':
     PM_bit_rate = 1000
 
     # Encode the message with an 3-repetition code in a phase-modulated
-    # waveform with a bit rate of PM_bit_rate relative phase of
-    # 180 degrees between '0' and '1', and the default amplitude and number
-    # of points.
+    # waveform with a bit rate of PM_bit_rate, a frequency of 10 * PM_bit_rate,
+    # a relative phase of 180 degrees between '0' and '1', and the default
+    # amplitude and number of points.
     times, waveform = transmit(
-        message, bit_rate=PM_bit_rate, encoding='repetition',
-        encoding_arg=num_repetitions, modulation_type='PM',
-        relative_phase=180
+        message, bit_rate=PM_bit_rate, frequency=10*PM_bit_rate,
+        encoding='repetition', encoding_arg=num_repetitions,
+        modulation_type='PM', relative_phase=180
     )
 
     plt.figure(figsize=(len(message) * num_repetitions, 5))
