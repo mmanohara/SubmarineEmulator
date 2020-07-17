@@ -8,7 +8,6 @@ Created on Tue May 12 18:57:06 2020
 import numpy as np
 import wave_gen as wg
 
-import matplotlib.pyplot as plt
 
 
 def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
@@ -64,12 +63,16 @@ def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
     reference_peak = np.argmax(wave_after > amp - error)
     reference_peak_time = time_after[reference_peak]
     
-    while reference_peak_time + time_int + period < times[-1]:
-
+    target_time = time_int * 3 / 2
+    
+    while target_time +  period < times[-1]:
+        
+        # the pos peak if phase doesn't change, based on the last peak
         pos_peak_after = reference_peak_time + (periods_per_interval) * period
         
-        i_before = np.argmax(times > reference_peak_time + time_int)
-        i_after = np.argmax(times > reference_peak_time + time_int + period)
+        
+        i_before = np.argmax(times > target_time)
+        i_after = np.argmax(times > target_time + period)
 
         wave_after = waveform[i_before: i_after]
         times_after = times[i_before: i_after]
@@ -97,6 +100,7 @@ def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
             bits.append(difference)
             
         reference_peak_time = actual_pos_peak_after
+        target_time += time_int
         
     
     return bits
@@ -108,20 +112,20 @@ if __name__ == '__main__':
 
     waves = []
     
-    # works on 90, 180, 270 -
+    # works on 90, 180, 270 - [.5, 1, 1.5, 0]
     waves.append([(0.001, 20000, 1, 0), (0.001, 20000, 1, 90),
             (0.001, 20000, 1, 180), (0.001, 20000, 1, 270),
             (0.001, 20000, 1, 0)])
 
-    # works with arbitrary lengths of 0s
+    # works with arbitrary lengths of 0s - [0, 0, 0, 0, 0, 0, 0]
     waves.append([(0.004, 20000, 1, 0), (0.003, 20000, 1, 0), 
                   (0.001, 20000, 1, 0)])
     
-    # works with phase shifts then holds
+    # works with phase shifts then holds - [.05, 0, 0 ,1]
     waves.append([(0.001, 20000, 1, 0), (0.003, 20000, 1, 90), 
                   (0.001, 20000, 1, 180)])
     
-    # pushes to nearest phase
+    # pushes to nearest phase- [.5, .5, 1, 1, 1.5]
     waves.append([(0.001, 20000, 1, 0), (0.001, 20000, 1, 95), 
                   (0.001, 20000, 1, 85), (0.001, 20000, 1, 190), 
                   (0.001, 20000, 1, 173), (0.001, 20000, 1, 274)])
@@ -133,6 +137,7 @@ if __name__ == '__main__':
     # works on an amplitude that is not 1, as long as amp is constant
     # it could work even if amp isnt constant, but mostly due to the error 
     # margins I allow and I wouldn't push it
+    # [.5, 1, 1.5]
     wave = ([(0.001, 20000, 2, 0), (0.001, 20000, 2, 90),
             (0.001, 20000, 2, 180), (0.001, 20000, 2, 270)])
     times, waveform = wg.wave_gen(wave)
