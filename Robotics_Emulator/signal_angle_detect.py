@@ -64,9 +64,21 @@ def find_origin(c, freq, d, p):
 
     '''
     
+    # find phase differences
+    # diffs[0] and [1] are x phase diffs on top and bottom, respectively
+    # diffs[2] and [3] are y phase diffs on the left and right, respectively
+    diffs = np.array([p[1]-p[0], p[2]-p[3], p[0]-p[3], p[1]-p[2]])
+    
+    #trim phase differences to force between +/- pi
+    diffs = diffs % (2 * np.pi) 
+    
+    for x in range(4):
+        if diffs[x] > np.pi:
+            diffs[x] = diffs[x] - (2 * np.pi)
+            
     # v_x, v_y, and v_z are the x and y components of the wave direction
-    v_x = c * (p[1] - p[0] - p[3] + p[2])/(4 * np.pi * d * freq)
-    v_y = (p[1] + p[0] - p[3] - p[2])/(4 * np.pi * d * freq)
+    v_x = c * (diffs[0] + diffs[1])/(4 * np.pi * d * freq)
+    v_y = (diffs[2] + diffs[3])/(4 * np.pi * d * freq)
     v_z = math.sqrt(1 - pow(v_x, 2) - pow(v_y, 2))
     
     return np.array([v_x, v_y, v_z])
@@ -103,7 +115,6 @@ def find_phase(freq, times, waves):
     times = times[times < times[0] + 0.001]
     if (times.size < 1):
         # If no measurements taken in the first millisecond, something wrong
-        print('ah shit')
         return 0; # what should I do?
     
     # Trim the wave using the times as a guide
@@ -114,7 +125,7 @@ def find_phase(freq, times, waves):
     kQ = np.sum(waves * np.sin(omega * times))
     
     # Am I correct in using arctan2 here?
-    phase = np.arctan2(kI, kQ)
+    phase = np.arctan2(kQ, kI)
 
     return phase
 

@@ -74,7 +74,7 @@ ________.________x
 if __name__=='__main__':
     # Code testing region
     # Generate DOA
-    doa = np.array([1, 2, 0])
+    doa = np.array([4, 0, 0])
     freq = 25000 #Hz
     time_length = 0.002 #s
     spacing = 0.01778 #m, corresponds to 0.7in
