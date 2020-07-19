@@ -76,10 +76,15 @@ def find_origin(c, freq, d, p):
         if diffs[x] > np.pi:
             diffs[x] = diffs[x] - (2 * np.pi)
             
-    # v_x, v_y, and v_z are the x and y components of the wave direction
+    # v_x, v_y, and v_z are the x, y, and z components of the wave direction
     v_x = c * (diffs[0] + diffs[1])/(4 * np.pi * d * freq)
-    v_y = (diffs[2] + diffs[3])/(4 * np.pi * d * freq)
-    v_z = math.sqrt(1 - pow(v_x, 2) - pow(v_y, 2))
+    v_y = c * (diffs[2] + diffs[3])/(4 * np.pi * d * freq)
+    v_z = 1 - pow(v_x, 2) - pow(v_y, 2)
+    if v_z < 0:
+        v_z = 0
+    else:
+        v_z = np.sqrt(v_z)
+        
     
     return np.array([v_x, v_y, v_z])
     
