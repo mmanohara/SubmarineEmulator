@@ -93,12 +93,14 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=0,
         )
 
     Function call to encode 'msg' with an n=3 Hamming code in a phase-modulated
-    waveform with a bit rate of 30000 relative phase shift of 180 degrees
-    between '0' and '1', an amplitude of 5, and the default number of points:
+    waveform with a bit rate of 30000 bits/s, a frequency of 300000Hz,
+    a relative phase shift of 180 degrees between '0' and '1',
+    an amplitude of 5, and the default number of points:
 
     >>> transmit(
-            msg, bit_rate=30000, encoding='hamming', encoding_arg=3,
-            modulation_type='PM', relative_phase=180, amplitude=5
+            msg, bit_rate=30000, frequency=300000, encoding='hamming',
+            encoding_arg=3, modulation_type='PM', relative_phase=180,
+            amplitude=5
         )
 
     """
@@ -150,10 +152,11 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=0,
         # frequency, amplitude, and the correct relative phase
         # (with the arguments in that order).
         prev_bit = code[0]
+        prev_phase = 0
         for bit in code:
             wave_segments.append(
                 (bit_duration, frequency, amplitude,
-                 relative_phase if bit != prev_bit else 0)
+                 prev_phase + (relative_phase if bit != prev_bit else 0))
             )
             prev_bit = bit
     else:
