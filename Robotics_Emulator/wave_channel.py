@@ -13,7 +13,7 @@ sub, will add that later.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from main_test import emulate
+from wave_gen import wave_gen
 
 '''
 IMPORTANT NOTE: ALL UNITS ARE IN SI STANDARD UNITS. Thus, speed is in m/s,
@@ -22,10 +22,52 @@ frequency is in Hz, positions in m, etc.
 # Speed of sound in water
 SPEED_OF_SOUND = 1480
 
+
+def single_channel(input_times, input_waveform, transmitter_pos_init, 
+                   receiver_pos_init, transmitter_velocity, 
+                   receiver_velocity, wave_speed):
+     # Velocity of the transmitter relative to the receiver.
+    relative_velocity = transmitter_velocity - receiver_velocity
+
+    # Initial position of the transmitter relative to the receiver.
+    relative_pos_init = transmitter_pos_init - receiver_pos_init
+
+    # Relative position of the transmitter every time it makes a ping.
+    relative_positions = np.array([
+        relative_pos_init + time * relative_velocity for time in input_times
+    ])
+
+    # Distance the wave travels for each sample.
+    travel_distances = np.linalg.norm(relative_positions, axis=1)
+
+    # The velocity of the ping obtained by the receiver in the 'rest' frame
+    # of the medium (water in our case) is given by the speed of the wave
+    # in the medium multiplied by the unit vector pointing from the transmitter
+    # to the receiver.
+    wave_velocities = np.array([
+        -wave_speed * relative_position / np.linalg.norm(relative_position)
+        for relative_position in relative_positions
+    ])
+
+    # The speed of the ping obtained in the receiver's rest frame.
+    relative_wave_speeds = \
+        np.linalg.norm(wave_velocities - receiver_velocity, axis=1)
+
+    # The time at which each point is received is given by the distance
+    # travelled divided by the wave speed relative to the receiver.
+    output_times = input_times + travel_distances / relative_wave_speeds
+
+    # Calculate the magnitude of the pings at the received sub.
+    output_waveform = input_waveform / travel_distances
+
+    return (output_times, output_waveform)
+
+
+
 #Function to calculate recieved waveforms at the hydrophone locations
-def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
+def channel(input_times, input_waveform, transmitter_pos_init, receiver_center_pos_init,
             receiver_orientation, spacing, transmitter_velo, receiver_velo, 
-            noise, duration=0.001, n_points=1000):
+            noise, wave_speed):
     
     #Calculate the initial positions of the 4 reciever (hydrophone) positions.
     #They are arranged in a d by d square with reciever_center_pos_init at the center,
@@ -72,19 +114,19 @@ def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
     output_waveforms = [None] * 5
     
     for i in range(5):
-        in_, output_wave = emulate(wave_speed, freq, transmitter_pos_init,
-                                       receiver_positions[i], transmitter_velo,
-                                       receiver_velo)
+        output_wave = single_channel(input_times, input_waveform, transmitter_pos_init, 
+                                     receiver_positions[i], transmitter_velo, 
+                                     receiver_velo, wave_speed)
+        
         times, waveform = output_wave
         waveform = waveform + np.random.normal(0,noise,size=len(waveform))
         output_times[i] = times
         output_waveforms[i] = waveform
     
-    #Return the input times,waveform and then the times,waveform received at 
-    #each of the 5 points (center and 4 hydrophones). The waves received at the
-    #4 hydrophones are listed counterclockwise, starting with front left.
+    #Return the times,waveform received at each of the 5 points (center and 
+    #4 hydrophones). The waves received at the 4 hydrophones are listed 
+    #counterclockwise, starting with front left.
     #So, the values returned are:
-        #   Input times, waveform
         #   Output times
         #   Output waveforms 
         #where the outputs are indexed as:
@@ -94,12 +136,11 @@ def channel(wave_speed, freq, transmitter_pos_init, receiver_center_pos_init,
         #   3: back right
         #   4: front right
         
-    return in_, output_times, output_waveforms
+    return output_times, output_waveforms
 
 # Code testing region.
 if __name__ == '__main__':
 
-    frequency = 30000
     noise_variance = 0.0005
     
     # Set initial sub positions and velocities
@@ -110,15 +151,22 @@ if __name__ == '__main__':
     receiver_velocity = np.array([0, 0])
     receiver_spacing = 0.0254
     
+    #Create the input wave
+    input_times, input_waveform = wave_gen(
+        [(0.00025, 20000, 1, 0), (0.0005, 40000, 1, 0),
+         (0.00025, 20000, 1, 0)],
+        num_pts=1000
+    )
+    
     # Emulate input and output waveforms
-    in_, output_times, output_waveforms = channel(
-    SPEED_OF_SOUND, frequency, transmitter_position_initial, receiver_position_initial,
+    output_times, output_waveforms = channel(input_times, input_waveform,
+    transmitter_position_initial, receiver_position_initial,
     receiver_orientation_initial, receiver_spacing, transmitter_velocity, 
-    receiver_velocity, noise_variance)
+    receiver_velocity, noise_variance, SPEED_OF_SOUND)
     
 
     plt.figure()
-    plt.plot(in_[0], in_[1], c='r', label="Input waveform")
+    plt.plot(input_times, input_waveform, c='r', label="Input waveform")
     plt.legend()
     
     #Plot the outputs (0: center, 1: front left, 2: back left, 3: back right, 
