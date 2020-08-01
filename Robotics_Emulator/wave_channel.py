@@ -22,7 +22,8 @@ frequency is in Hz, positions in m, etc.
 # Speed of sound in water
 SPEED_OF_SOUND = 1480
 
-
+#Calculate the output waveform at a specified location from a given input waveform
+#Code taken from emulate function in main_test
 def single_channel(input_times, input_waveform, transmitter_pos_init, 
                    receiver_pos_init, transmitter_velocity, 
                    receiver_velocity, wave_speed):
