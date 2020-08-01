@@ -56,14 +56,14 @@ def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
     periods_per_interval = time_int // period
 
     # Set the first positive peak
-    i = np.argmax(times > time_int/2)
-    i_period = np.argmax(times > time_int/2 + period)
+    i = np.argmax(times > (times[0] + time_int/2))
+    i_period = np.argmax(times > (times[0] + time_int/2 + period))
     wave_after = waveform[i: i_period]
     time_after = times[i: i_period]
     reference_peak = np.argmax(wave_after > amp - error)
     reference_peak_time = time_after[reference_peak]
     
-    target_time = time_int * 3 / 2
+    target_time = times[0] + time_int / 2 + time_int
     
     while target_time +  period < times[-1]:
         
