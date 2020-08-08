@@ -123,7 +123,7 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
 
     Returns
     -------
-    phases - A list of the phase shifts of each bit
+    phases - 1D numpy array of the phase shifts of each bit
 
     '''
     
@@ -135,8 +135,9 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
     omega = 2 * np.pi * freq
     
     phases = [] # to be returned
+    phase_diffs = [] # it's DIFFERENT from phases (haha)
     currentTime = delT/2 # start at middle of first bit
-    delTPrime = delT/4 # measure outwards 1/4 of a time interval from center
+    delTPrime = 3 * delT/8 # measure outwards 1/4 of a time interval from center
     bit = 0 # keep track of which bit we're on
     
     # index of data to help us determine what to take from waveform
@@ -166,17 +167,21 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
         # sums to find kI and kQ for Fourier inner product
         kI = np.sum(measureWave * np.cos(omega * measureTimes))
         kQ = np.sum(measureWave * np.sin(omega * measureTimes))
-    
-        # calculate phase
-        phases[bit] = np.arctan2(kQ, kI)
         
+        phases.append(np.arctan2(kQ, kI))
+        
+        if (bit > 0):
+            phase_diffs.append(phases[bit] - phases[bit - 1])
+
         # move index up to the beginning of the next relevant period
         index += indexJump
         
         # move currentTime up to the middle of the next relevant period
         currentTime += delT
         
-    return phases
+        bit += 1
+        
+    return np.array(phase_diffs) * 180 / np.pi
     
 
 # testing
@@ -204,6 +209,7 @@ if __name__ == '__main__':
     
     for wave in waves:
         times, waveform = wg.wave_gen(wave)
+        print("iteration begins")
         print(fourier_phase_shift_checker(times, waveform, .001, 20000))
     
     # works on an amplitude that is not 1, as long as amp is constant
