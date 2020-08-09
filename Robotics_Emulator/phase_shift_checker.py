@@ -3,6 +3,7 @@
 Created on Tue May 12 18:57:06 2020
 
 @author: iris0
+@contributor: chase
 """
 
 import numpy as np
@@ -56,14 +57,14 @@ def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
     periods_per_interval = time_int // period
 
     # Set the first positive peak
-    i = np.argmax(times > time_int/2)
-    i_period = np.argmax(times > time_int/2 + period)
+    i = np.argmax(times > (times[0] + time_int/2))
+    i_period = np.argmax(times > (times[0] + time_int/2 + period))
     wave_after = waveform[i: i_period]
     time_after = times[i: i_period]
     reference_peak = np.argmax(wave_after > amp - error)
     reference_peak_time = time_after[reference_peak]
     
-    target_time = time_int * 3 / 2
+    target_time = times[0] + time_int / 2 + time_int
     
     while target_time +  period < times[-1]:
         
@@ -105,7 +106,83 @@ def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
     
     return bits
         
+def fourier_phase_shift_checker(times, waveform, delT, freq):
+    '''
+    
 
+    Parameters
+    ----------
+    times : TYPE 1D numpy array
+        array of times of each measurement of the wave
+    waveform : TYPE 1D numpy array
+        array of values for each point in the wave
+    delT : TYPE float
+        time interval between each bit change
+    freq : TYPE float
+        frequency of the carrier signal
+
+    Returns
+    -------
+    phases - 1D numpy array of the phase shifts of each bit
+
+    '''
+    
+    #TODO: What if time is initially not zero
+    
+    waveform = np.array(waveform) #in case it isn't already
+    times = np.array(times)
+    
+    omega = 2 * np.pi * freq
+    
+    phases = [] # to be returned
+    phase_diffs = [] # it's DIFFERENT from phases (haha)
+    currentTime = delT/2 # start at middle of first bit
+    delTPrime = 3 * delT/8 # measure outwards 1/4 of a time interval from center
+    bit = 0 # keep track of which bit we're on
+    
+    # index of data to help us determine what to take from waveform
+    index = times[times < currentTime - delTPrime].size
+    
+    # only return phases of bits where enough data is received to make full 
+    # measurement
+    while times[times > currentTime + delTPrime].size > 0:
+        # trim time to relevant period
+        # start by trimming above lower bound
+        measureTimes = times[times >= currentTime - delTPrime]
+        
+        # trim top by one bit-length away to get number of indices to jump 
+        # in order to get to beginning of next relevant period (if needed)
+        measureTimes = measureTimes[measureTimes < currentTime - delTPrime + delT]
+        
+        indexJump = measureTimes.size
+        
+        # trim top to top of actual relevant period inside this bit
+        measureTimes = measureTimes[measureTimes < currentTime + delTPrime]
+
+        # trim wave to relevant period
+        # use index and add length of measureTimes to insure both are the 
+        # same length
+        measureWave = np.take(waveform, range(index, index + measureTimes.size))
+        
+        # sums to find kI and kQ for Fourier inner product
+        kI = np.sum(measureWave * np.cos(omega * measureTimes))
+        kQ = np.sum(measureWave * np.sin(omega * measureTimes))
+        
+        phases.append(np.arctan2(kQ, kI))
+        
+        if (bit > 0):
+            phase_diffs.append(phases[bit] - phases[bit - 1])
+
+        # move index up to the beginning of the next relevant period
+        index += indexJump
+        
+        # move currentTime up to the middle of the next relevant period
+        currentTime += delT
+        
+        bit += 1
+        
+    return np.array(phase_diffs) * 180 / np.pi
+    
 
 # testing
 if __name__ == '__main__':
@@ -132,7 +209,8 @@ if __name__ == '__main__':
     
     for wave in waves:
         times, waveform = wg.wave_gen(wave)
-        print(phase_shift_checker(times, waveform, .001, 20000))
+        print("iteration begins")
+        print(fourier_phase_shift_checker(times, waveform, .001, 20000))
     
     # works on an amplitude that is not 1, as long as amp is constant
     # it could work even if amp isnt constant, but mostly due to the error 

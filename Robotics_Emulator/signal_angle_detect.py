@@ -4,7 +4,7 @@ Created on Tue May 5 21:08:03 2020
 
 @author: chase
 
-Returns a vector representing the direction of origin of the pings 
+Returns a vector representing the direction of origin of hydrophone pings 
 
 """
 
@@ -119,8 +119,7 @@ def find_phase(freq, times, waves):
     # Trim this signal to the first ms, which is all we need
     times = times[times < times[0] + 0.001]
     if (times.size < 1):
-        # If no measurements taken in the first millisecond, something wrong
-        return 0; # what should I do?
+        return 0;
     
     # Trim the wave using the times as a guide
     waves = np.resize(waves, times.size)
@@ -129,7 +128,6 @@ def find_phase(freq, times, waves):
     kI = np.sum(waves * np.cos(omega * times))
     kQ = np.sum(waves * np.sin(omega * times))
     
-    # Am I correct in using arctan2 here?
     phase = np.arctan2(kQ, kI)
 
     return phase
