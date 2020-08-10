@@ -123,14 +123,16 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
 
     Returns
     -------
-    phases - 1D numpy array of the phase shifts of each bit
+    phase_diffs - 1D numpy array of the phase shifts of each bit relative to
+    previous bit
 
     '''
     
-    #TODO: What if time is initially not zero
-    
     waveform = np.array(waveform) #in case it isn't already
     times = np.array(times)
+    
+    # adjust times to start at zero
+    times = times - times[0]
     
     omega = 2 * np.pi * freq
     
@@ -181,8 +183,39 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
         
         bit += 1
         
-    return np.array(phase_diffs) * 180 / np.pi
+    return -np.array(phase_diffs) * 180 / np.pi
     
+
+def phase_to_bit(phase_diffs):
+    '''
+    
+
+    Parameters
+    ----------
+    phases : TYPE 1D numpy array
+        1D numpy array of phase shifts relative to previous bit
+
+    Returns
+    bits : TYPE 1D numpy array of bits (1, 0)
+    -------
+    None.
+
+    '''
+    
+    bits = []
+    
+    for diff in phase_diffs:
+        diff = diff % 360
+        if diff < 90:
+            bits.append(0)
+        elif diff < 270:
+            bits.append(1)
+        else:
+            bits.append(0)
+    
+    bits = np.array(bits)
+    
+    return bits
 
 # testing
 if __name__ == '__main__':
@@ -209,8 +242,8 @@ if __name__ == '__main__':
     
     for wave in waves:
         times, waveform = wg.wave_gen(wave)
-        print("iteration begins")
-        print(fourier_phase_shift_checker(times, waveform, .001, 20000))
+        #print(fourier_phase_shift_checker(times, waveform, .001, 20000))
+        print(phase_to_bit(fourier_phase_shift_checker(times, waveform, .001, 20000)))
     
     # works on an amplitude that is not 1, as long as amp is constant
     # it could work even if amp isnt constant, but mostly due to the error 
