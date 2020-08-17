@@ -8,14 +8,12 @@ Returns a vector representing the direction of origin of hydrophone pings
 
 """
 
-# This has not actually been done yet
 # TODO: Use Reuben's code to generate a waveform and determine the phases
 # from that
-# the waveform you can expect in from tyler is in the form of two one
-# dimensional arrays, one of times and one of voltages
+
 # I can assume that the ping will be more than 1 millisecond long
 # I know that for the most part 1 millisecond is an integer number of periods
-# But I can also use the known period based on the frequency to round the time
+# TODO: I can also use the known period based on the frequency to round the time
 # down to an integer multiple of the period to make my math actually work out
 
 import math
@@ -65,22 +63,25 @@ def find_origin(c, freq, d, p):
     '''
     
     # find phase differences
-    # diffs[0] and [1] are x phase diffs on top and bottom, respectively
-    # diffs[2] and [3] are y phase diffs on the left and right, respectively
+    # diffs[0] and [1] are x phase diffs (between L and R h-phone) on top and bottom, respectively
+    # diffs[2] and [3] are y phase diffs (between top and bottom h-phone) on the left and right, respectively
     diffs = np.array([p[1]-p[0], p[2]-p[3], p[0]-p[3], p[1]-p[2]])
     
-    #trim phase differences to force between +/- pi
+    # trim phase differences to force between +/- pi
     diffs = diffs % (2 * np.pi) 
-    
     for x in range(4):
         if diffs[x] > np.pi:
             diffs[x] = diffs[x] - (2 * np.pi)
             
     # v_x, v_y, and v_z are the x, y, and z components of the wave direction
+    # these equations come from Physics
     v_x = c * (diffs[0] + diffs[1])/(4 * np.pi * d * freq)
     v_y = c * (diffs[2] + diffs[3])/(4 * np.pi * d * freq)
-    v_z = 1 - pow(v_x, 2) - pow(v_y, 2)
+    # the squares of the components must sum to 1 (mohith said so)
+    v_z = 1 - pow(v_x, 2) - pow(v_y, 2) 
     if v_z < 0:
+        # if for some reason the other two components square and add to 
+        # more than 1 (rounding), this just gives zero as the third component
         v_z = 0
     else:
         v_z = np.sqrt(v_z)
@@ -113,12 +114,13 @@ def find_phase(freq, times, waves):
     The phase difference of this particular wave
 
     '''
-    
+    # define omega for later use
     omega = 2 * np.pi * freq
     
     # Trim this signal to the first ms, which is all we need
     times = times[times < times[0] + 0.001]
     if (times.size < 1):
+        # if no signal
         return 0;
     
     # Trim the wave using the times as a guide
@@ -128,6 +130,7 @@ def find_phase(freq, times, waves):
     kI = np.sum(waves * np.cos(omega * times))
     kQ = np.sum(waves * np.sin(omega * times))
     
+    # take that arctan using kQ and kI to find phase
     phase = np.arctan2(kQ, kI)
 
     return phase
@@ -168,10 +171,14 @@ def signal_angle_detect(c, freq, d, times, waves):
     signal
 
     '''
+    # allocate space for four phases
     phases = np.zeros(4)
+    
+    # use find_phase to get the four phases at each of the h-phones
     for i in range(0, 4):
         phases[i] = find_phase(freq, times[i], waves[i])
-        
+    
+    # use find_origin to convert the four phases into a direction of arrival
     doa = find_origin(c, freq, d, phases)
     
     return doa
