@@ -108,7 +108,8 @@ def phase_shift_checker(times, waveform, time_int, freq, error = .1, amp = 1):
         
 def fourier_phase_shift_checker(times, waveform, delT, freq):
     '''
-    
+    Check the phase shift of the wave at regular intervals (once per bit)
+    Based on the bit length specified by delT
 
     Parameters
     ----------
@@ -128,61 +129,108 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
 
     '''
     
-    waveform = np.array(waveform) #in case it isn't already
+    waveform = np.array(waveform) # make it a np array in case it isn't already
     times = np.array(times)
     
-    # adjust times to start at zero
+    # adjust times array to start at t=0
     times = times - times[0]
     
+    # define omega
     omega = 2 * np.pi * freq
     
-    phases = [] # to be returned
-    phase_diffs = [] # it's DIFFERENT from phases (haha)
-    currentTime = delT/2 # start at middle of first bit
-    delTPrime = 3 * delT/8 # measure outwards 1/4 of a time interval from center
+    phases = [] # will hold the phase of the wave at each interval
+   
+    phase_diffs = [] # will hold the difference of the phase at one interval
+    # from the phase of the wave in the previous time interval
+    # it's DIFFERENT from phases (haha)
+    
+    # Each bit has a width of delT. The first bit runs from t = 0 to t = delT
+    # we set currentTime to the middle of the bit we are measuring
+    # thanks to our excellent foresight, we've adjusted everything to t = 0
+    currentTime = delT/2 # thus, this starts us at the middle of the first bit.
+    
+    # Fourier phase detection requires measurement over an interval
+    # delTPrime measures the "radius" outward from the center of that interval
+    # The Fourier interval ranges from t = currentTime - delTPrime
+    # to t = currentTime + delTPrime
+    # so if delTPrime = delT/4, the first bit interval would run from 
+    # delT/4 to 3*delT/4, and the interval in the next bit would run from
+    # (delT + delT/4) to (delT + 3*delT/4) because the length of a bit is delT
+    # delTPrime must remain less than delT/2.
+    delTPrime = 3 * delT/8 
+    
     bit = 0 # keep track of which bit we're on
     
-    # index of data to help us determine what to take from waveform
+    # Trimming the arrays to keep only the relevant data to integrate over
+    # for our measurement interval is a real pain, so I use this index value
+    # to help mark off intervals.
+    # Here, I want to set the index value to indicate the index (in the times
+    # array) of the first element that WILL be included in the very first
+    # Fourier measurement interval (beginning @ t = 0). The value in brackets
+    # ("times < currentTime - delTPrime") is true for all elements that 
+    # PRECEDE the first element to be included in measurement. ".size" counts
+    # how many such elements are in the times array, and that number will be 
+    # the index of the next element - the first one that is IN the measurement
+    # interval. 
     index = times[times < currentTime - delTPrime].size
     
-    # only return phases of bits where enough data is received to make full 
-    # measurement
+    # The value in the bracket ("times > currentTime + delTPrime") is true 
+    # for any values lying above the upper bound of the current measurement 
+    # interval. Thus, if .size here is nonzero, more values exist beyond the 
+    # top of the current interval, and enough values exist to take a full 
+    # interval measurement. If .size is zero, not enough values exist for a 
+    # full Fourier interval to be taken, and the while loop ends.
     while times[times > currentTime + delTPrime].size > 0:
-        # trim time to relevant period
-        # start by trimming above lower bound
+        # We trim off any time values below the lower bound of the measurement 
+        # interval - any lying more than delTPrime below currentTime
+        # (where currentTime is the middle of the bit)
         measureTimes = times[times >= currentTime - delTPrime]
         
-        # trim top by one bit-length away to get number of indices to jump 
-        # in order to get to beginning of next relevant period (if needed)
+        # We then trim off any time values that are more than one bit-length
+        # ABOVE the lower bound of our Fourier interval. measureTimes now 
+        # spans from the beginning of this interval to what will become the 
+        # beginning of the next interval.
         measureTimes = measureTimes[measureTimes < currentTime - delTPrime + delT]
         
+        # Given the span of measureTimes, we take its size. Now, we can use
+        # indexJump to move the current index from the beginning of this
+        # interval to the beginning of the next interval once we're done here.
         indexJump = measureTimes.size
         
-        # trim top to top of actual relevant period inside this bit
+        # Now, we trim the top off of measureTimes again - now it contains
+        # only the time values that are inside our measurement interval.
         measureTimes = measureTimes[measureTimes < currentTime + delTPrime]
 
-        # trim wave to relevant period
-        # use index and add length of measureTimes to insure both are the 
-        # same length
+        # "index" is the index in times/waveform where our measurement begins
+        # Using index (as a start point) and the size of measureTimes
+        # (which now holds only the measurement interval), 
+        # we can trim measureWave from waveform so that it holds the waveform
+        # values that correspond to each of the time values in measureTimes.
+        # measureTimes and measureWave should now be the same length.
         measureWave = np.take(waveform, range(index, index + measureTimes.size))
         
-        # sums to find kI and kQ for Fourier inner product
+        # With the appropriately trimmed intervals, we now
+        # sum to find kI and kQ for Fourier inner product
         kI = np.sum(measureWave * np.cos(omega * measureTimes))
         kQ = np.sum(measureWave * np.sin(omega * measureTimes))
         
         phases.append(np.arctan2(kQ, kI))
         
+        # We don't calculate a phase difference for the first bit
+        # It's the baseline
         if (bit > 0):
             phase_diffs.append(phases[bit] - phases[bit - 1])
 
-        # move index up to the beginning of the next relevant period
+        # Move index up to the beginning of the next relevant period
         index += indexJump
         
-        # move currentTime up to the middle of the next relevant period
+        # Move currentTime up to the middle of the next relevant period
         currentTime += delT
         
+        # Move on to the next bit
         bit += 1
         
+    # Negative to counteract the integrals that make it negative (??)
     return -np.array(phase_diffs) * 180 / np.pi
     
 
