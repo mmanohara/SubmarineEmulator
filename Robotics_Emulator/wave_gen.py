@@ -77,6 +77,33 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
 
     return (times, waveform)
 
+def wave_write(times, waveform):
+    '''
+    Creates a new text (PWL) file with the associated values of the generated waveform. (This WILL append to existing files named waveform_pwl. You've been warned.)
+    Parameters
+    ----------
+    times : 1D numpy array
+        List of times corresponding to each point in the combined waveform.
+    waveform : 1D numpy array
+        List of magnitudes comprising the combined waveform.
+
+    Returns
+    -------
+    None.
+
+    '''
+    index = 0
+    
+    # THIS WILL APPEND TO EXISTING FILES NAMED WAVEFORM_PWL.TXT!!
+    wavefile = open('waveform_pwl.txt', 'a')
+    
+    for time in times:
+        wavefile.write(f'{time}\t{waveform[index]}\n')
+        index += 1
+        
+    wavefile.close()
+    return
+
 
 # Code testing region.
 if __name__ == '__main__':
@@ -116,3 +143,6 @@ if __name__ == '__main__':
         plt.plot(times, waveform, label='Combined Waveform')
         plt.legend
         plt.show()
+        
+    times, waveform = wave_gen(waves[1])
+    wave_write(times, waveform)
