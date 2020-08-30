@@ -157,7 +157,7 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
     # delT/4 to 3*delT/4, and the interval in the next bit would run from
     # (delT + delT/4) to (delT + 3*delT/4) because the length of a bit is delT
     # delTPrime must remain less than delT/2.
-    delTPrime = 3 * delT/8 
+    delTPrime = 2 * delT/8 
     
     bit = 0 # keep track of which bit we're on
     
