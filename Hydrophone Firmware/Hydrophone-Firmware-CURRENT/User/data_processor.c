@@ -13,7 +13,8 @@
 #define SAMPLING_FREQ_HZ (SAMPLING_FREQ_KHZ * 1000) /** Sampling frequency */
 #define WINDOW_LEN (SAMPLING_FREQ_HZ / 1000) /** Fixed 1 ms window */
 
-int SIGNAL_FREQ_HZ; /** Frequency of the pinger */
+int SIGNAL_FREQ_HZ_2; /** Frequency of the pinger */
+int SIGNAL_FREQ_HZ_1;
 float NORMALIZED_TRIGGER_THRESHOLD; 
 float TRIGGER_THRESHOLD;
 float side_length = SIDE_LENGTH;
