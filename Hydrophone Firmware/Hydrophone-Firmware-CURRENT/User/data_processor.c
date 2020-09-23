@@ -13,10 +13,13 @@
 #define SAMPLING_FREQ_HZ (SAMPLING_FREQ_KHZ * 1000) /** Sampling frequency */
 #define WINDOW_LEN (SAMPLING_FREQ_HZ / 1000) /** Fixed 1 ms window */
 
-int SIGNAL_FREQ_HZ_2; /** Frequency of the pinger */
-int SIGNAL_FREQ_HZ_1;
-float NORMALIZED_TRIGGER_THRESHOLD; 
-float TRIGGER_THRESHOLD;
+
+int SIGNAL_FREQ_HZ; /** Frequency of the pinger */
+float NORMALIZED_TRIGGER_THRESHOLD_HI;
+float NORMALIZED_TRIGGER_THRESHOLD_LO;
+float TRIGGER_THRESHOLD_HI;
+float TRIGGER_THRESHOLD_LO;
+
 float side_length = SIDE_LENGTH;
 
 /** woot doot this is Eilleen testing out github perms**/
@@ -111,9 +114,11 @@ void initializeOrChangeFrequency(int SIGNAL_FREQ_KHZ) {
 		Hydrophone_reinitialize(&hydrophone[i]);
 }
 
-void changeThreshold(float threshold) {
-	TRIGGER_THRESHOLD = threshold;
-	NORMALIZED_TRIGGER_THRESHOLD = threshold * threshold * WINDOW_LEN * WINDOW_LEN / 4.0f;
+void changeThreshold(float threshold_hi, float threshold_lo) {
+	TRIGGER_THRESHOLD_HI = threshold_hi;
+	NORMALIZED_TRIGGER_THRESHOLD_HI = threshold_hi * threshold_hi * WINDOW_LEN * WINDOW_LEN / 4.0f;
+	TRIGGER_THRESHOLD_LO = threshold_lo;
+	NORMALIZED_TRIGGER_THRESHOLD_LO = threshold_lo * threshold_lo * WINDOW_LEN * WINDOW_LEN / 4.0f;
 }
 
 void changeSideLength(float side_length_new) {
@@ -122,7 +127,7 @@ void changeSideLength(float side_length_new) {
 
 
 // Internal state variables for detecting when a ping is happening and when to take a reading
-typedef enum { LISTENING, TRIGGERED, SLEEPING } Mode;
+typedef enum { LISTENING, TRIGGERED_HI, TRIGGERED_LO, SLEEPING_HI, SLEEPING_LO } Mode;
 Mode mode = LISTENING;
 int ticksSinceLastMode = 0;
 
@@ -154,15 +159,19 @@ bool process(float frontLeftData, float frontRightData, float backRightData, flo
 
 	switch (mode) {
 	case LISTENING:
-		if (magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD) {
-			mode = TRIGGERED;
+		if (magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD_HI) {
+			mode = TRIGGERED_HI;
+			ticksSinceLastMode = 0;
+		}
+		if (magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD_LO) {
+			mode = TRIGGERED_LO;
 			ticksSinceLastMode = 0;
 		}
 		break;
-	case TRIGGERED:
+	case TRIGGERED_HI:
 		if (ticksSinceLastMode > TRIGGER_DELAY_SEC * SAMPLING_FREQ_HZ) {
 			float normSq = Hydrophone_normSq(hydrophone);
-			if (/*magnitudeSq > 0.5f * normSq && *//*magnitudeSq > NORMALIZED_VALIDATION_THRESHOLD*/ magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD) {
+			if (/*magnitudeSq > 0.5f * normSq && *//*magnitudeSq > NORMALIZED_VALIDATION_THRESHOLD*/ magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD_HI) {
 				// In this case we will run overtime to compute the angle of the pinger (and then go to sleep)
 				float phase[4];
 				for (i = 0; i < 4; i++)
@@ -181,7 +190,7 @@ bool process(float frontLeftData, float frontRightData, float backRightData, flo
 				dir[2] = 1 - dir[0] * dir[0] - dir[1] * dir[1];
 				dir[2] = sqrt(dir[2] < 0 ? 0 : dir[2]);
 
-				mode = SLEEPING;
+				mode = SLEEPING_HI;
 				ticksSinceLastMode = 0;
 
 				// To prevent numerical errors from buiding up in sinAccum and cosAccum
@@ -204,7 +213,59 @@ bool process(float frontLeftData, float frontRightData, float backRightData, flo
 			}
 		}
 		break;
-	case SLEEPING: // To prevent triggering on reverberations
+		case TRIGGERED_LO:
+		if (ticksSinceLastMode > TRIGGER_DELAY_SEC * SAMPLING_FREQ_HZ) {
+			float normSq = Hydrophone_normSq(hydrophone);
+			if (/*magnitudeSq > 0.5f * normSq && *//*magnitudeSq > NORMALIZED_VALIDATION_THRESHOLD*/ magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD_LO) {
+				// In this case we will run overtime to compute the angle of the pinger (and then go to sleep)
+				float phase[4];
+				for (i = 0; i < 4; i++)
+					phase[i] = Hydrophone_phase(&hydrophone[i]);
+
+				for (i = 0; i < 4; i++) {
+					dPhase[i] = phase[i] - phase[(i + 1) % 4];
+					if (dPhase[i] > FLOAT_PI)
+						dPhase[i] -= 2 * FLOAT_PI;
+					if (dPhase[i] < -FLOAT_PI)
+						dPhase[i] += 2 * FLOAT_PI;
+				}
+
+				dir[0] = (dPhase[3] - dPhase[1]) * SPEED_OF_SOUND / (4 * FLOAT_PI * SIGNAL_FREQ_HZ * side_length);
+				dir[1] = (dPhase[0] - dPhase[2]) * SPEED_OF_SOUND / (4 * FLOAT_PI * SIGNAL_FREQ_HZ * side_length);
+				dir[2] = 1 - dir[0] * dir[0] - dir[1] * dir[1];
+				dir[2] = sqrt(dir[2] < 0 ? 0 : dir[2]);
+
+				mode = SLEEPING_LO;
+				ticksSinceLastMode = 0;
+
+				// To prevent numerical errors from buiding up in sinAccum and cosAccum
+				for (i = 0; i < 4; i++)
+					Hydrophone_reinitialize(&hydrophone[i]);
+
+				// Create the output message
+				sprintf(serialMsg, "$%f %f %f %f %f %f %f %f#\n\r", dir[0], dir[1], dir[2], dPhase[0], dPhase[1], dPhase[2], dPhase[3], magnitudeSq);
+				processing = 0;
+				*triggered = true;
+				return true;
+			}
+			else {
+				mode = LISTENING;
+				ticksSinceLastMode = 0;
+
+				// To prevent numerical errors from buiding up in sinAccum and cosAccum
+				for (i = 0; i < 4; i++)
+					Hydrophone_reinitialize(&hydrophone[i]);
+			}
+		}
+
+		break;
+	case SLEEPING_HI: // To prevent triggering on reverberations
+		if (ticksSinceLastMode > SLEEP_TIME_SEC * SAMPLING_FREQ_HZ) {
+			mode = LISTENING;
+			ticksSinceLastMode = 0;
+		}
+		break;
+	case SLEEPING_LO: // To prevent triggering on reverberations
 		if (ticksSinceLastMode > SLEEP_TIME_SEC * SAMPLING_FREQ_HZ) {
 			mode = LISTENING;
 			ticksSinceLastMode = 0;
