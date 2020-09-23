@@ -272,6 +272,67 @@ bool process(float frontLeftData, float frontRightData, float backRightData, flo
 		}
 		break;
 	}
+	
+	switch (mode) {
+	case LISTENING:
+		if (magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD_LO) {
+			mode = TRIGGERED_LO;
+			ticksSinceLastMode = 0;
+		}
+		break;
+		case TRIGGERED_LO:
+		if (ticksSinceLastMode > TRIGGER_DELAY_SEC * SAMPLING_FREQ_HZ) {
+			float normSq = Hydrophone_normSq(hydrophone);
+			if (/*magnitudeSq > 0.5f * normSq && *//*magnitudeSq > NORMALIZED_VALIDATION_THRESHOLD*/ magnitudeSq > NORMALIZED_TRIGGER_THRESHOLD_LO) {
+				// In this case we will run overtime to compute the angle of the pinger (and then go to sleep)
+				float phase[4];
+				for (i = 0; i < 4; i++)
+					phase[i] = Hydrophone_phase(&hydrophone[i]);
+
+				for (i = 0; i < 4; i++) {
+					dPhase[i] = phase[i] - phase[(i + 1) % 4];
+					if (dPhase[i] > FLOAT_PI)
+						dPhase[i] -= 2 * FLOAT_PI;
+					if (dPhase[i] < -FLOAT_PI)
+						dPhase[i] += 2 * FLOAT_PI;
+				}
+
+				dir[0] = (dPhase[3] - dPhase[1]) * SPEED_OF_SOUND / (4 * FLOAT_PI * SIGNAL_FREQ_HZ * side_length);
+				dir[1] = (dPhase[0] - dPhase[2]) * SPEED_OF_SOUND / (4 * FLOAT_PI * SIGNAL_FREQ_HZ * side_length);
+				dir[2] = 1 - dir[0] * dir[0] - dir[1] * dir[1];
+				dir[2] = sqrt(dir[2] < 0 ? 0 : dir[2]);
+
+				mode = SLEEPING_LO;
+				ticksSinceLastMode = 0;
+
+				// To prevent numerical errors from buiding up in sinAccum and cosAccum
+				for (i = 0; i < 4; i++)
+					Hydrophone_reinitialize(&hydrophone[i]);
+
+				// Create the output message
+				sprintf(serialMsg, "$%f %f %f %f %f %f %f %f#\n\r", dir[0], dir[1], dir[2], dPhase[0], dPhase[1], dPhase[2], dPhase[3], magnitudeSq);
+				processing = 0;
+				*triggered = true;
+				return true;
+			}
+			else {
+				mode = LISTENING;
+				ticksSinceLastMode = 0;
+
+				// To prevent numerical errors from buiding up in sinAccum and cosAccum
+				for (i = 0; i < 4; i++)
+					Hydrophone_reinitialize(&hydrophone[i]);
+			}
+		}
+
+		break;
+	case SLEEPING_LO: // To prevent triggering on reverberations
+		if (ticksSinceLastMode > SLEEP_TIME_SEC * SAMPLING_FREQ_HZ) {
+			mode = LISTENING;
+			ticksSinceLastMode = 0;
+		}
+		break;
+	}
 
 	processing = 0;
 	return false;
