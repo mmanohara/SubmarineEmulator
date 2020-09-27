@@ -25,12 +25,16 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=0,
              num_pts=1000):
     """
     Encode the given bitsteam into a modulated digital waveform.
+    
+    UPDATE 9/26/2020 by MOHITH: Error correcting codes no longer work with
+    QPSK modulation.
 
     Parameters
     ----------
     bitstream : 1D array_like of '0's and '1's
         Series of bits (as single-character strings) representing the message
-        to be encoded and transmitted.
+        to be encoded and transmitted. If using qpsk, '2' and '3' are also 
+        allowed messages.
 
     bit_rate : float
         The number of bits conveyed per second in the output waveform.
@@ -65,7 +69,7 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=0,
         The default is 180.
 
     QPSK_phases : float, optional
-        The relative phases between pairs of bits (00, 01, 10, 11)
+        The relative phases between symbols (0, 1, 2, 3)
         when using quadrature phase-shift keying. This parameter is ignored
         if QPSK is not used. The default is (45, 135, 225, 315).
 
@@ -173,16 +177,16 @@ def transmit(bitstream, bit_rate, *, encoding=None, encoding_arg=0,
         # duration, frequency, amplitude, and the correct phase relative to
         # the previous pair (with the arguments in that order).
         prev_phase = 0
-        for i in range(0, len(code), 2):
-            pair = code[i:i+2]
+        for symb in code:
             # Choose the appropriate phase shift based on the pair of bits.
-            if pair == '00':
+            relative_phase = 0
+            if symb == '0':
                 relative_phase = QPSK_phases[0]
-            elif pair == '01':
+            elif symb == '1':
                 relative_phase = QPSK_phases[1]
-            elif pair == '10':
+            elif symb == '2':
                 relative_phase = QPSK_phases[2]
-            elif pair == '11':
+            elif symb == '3':
                 relative_phase = QPSK_phases[3]
             wave_segments.append(
                 (bit_duration, frequency, amplitude,

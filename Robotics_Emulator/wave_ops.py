@@ -12,6 +12,7 @@ value of waves between points
 delay_wave delays the time value of a wave.
 """
 import numpy as np
+from math import floor
 from wave_gen import wave_gen
 import matplotlib.pyplot as plt
 
@@ -99,6 +100,9 @@ def combine_wave(packet1, packet2):
             firsti += 1
             lasti += 1
     return (np.array(final_times), np.array(final_waves))
+
+def sample_wave(packet, sample_rate):
+    start_time = sample_rate * floor(packet[0][0] / sample_rate)
 
 def delay_wave(packet, delay):
     '''

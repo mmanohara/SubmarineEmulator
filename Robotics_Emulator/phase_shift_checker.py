@@ -234,7 +234,7 @@ def fourier_phase_shift_checker(times, waveform, delT, freq):
     return -np.array(phase_diffs) * 180 / np.pi
     
 
-def phase_to_bit(phase_diffs):
+def phase_to_bit(phase_diffs, quad=False):
     '''
     
 
@@ -251,19 +251,33 @@ def phase_to_bit(phase_diffs):
     '''
     
     bits = []
-    
-    for diff in phase_diffs:
-        diff = diff % 360
-        if diff < 90:
-            bits.append(0)
-        elif diff < 270:
-            bits.append(1)
-        else:
-            bits.append(0)
-    
-    bits = np.array(bits)
-    
-    return bits
+    if not quad:
+        for diff in phase_diffs:
+            diff = diff % 360
+            if diff < 90:
+                bits.append(0)
+            elif diff < 270:
+                bits.append(1)
+            else:
+                bits.append(0)
+        
+        bits = np.array(bits)
+        
+        return bits
+    else:
+        for diff in phase_diffs:
+            diff = diff % 360
+            if diff < 45:
+                bits.append(0)
+            elif diff < 135:
+                bits.append(1)
+            elif diff < 225:
+                bits.append(2)
+            elif diff < 315:
+                bits.append(3)
+            else:
+                bits.append(0)
+        return np.array(bits)
 
 # testing
 if __name__ == '__main__':
