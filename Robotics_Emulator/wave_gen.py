@@ -8,19 +8,20 @@ Created on Sun Jun 21 22:53:06 2020
 This file provides a function that generates an amplitude-modulated sinusoidal
 waveform over a fixed time period.
 
-# TODO: Fix FM generator to match this one.
+TODO: Fix FM generator to match this one.
 
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
+case = 'test'
 
 def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
     """
     Stitch together a series of sinusoids of based on the given parameters.
 
-    Each segment is specified by its duration, frequency, amplitude, and
+    Each segment is specified by its duration, frequency, amplitude,
     relative phase to allow for phase, amplitude, or frequency modulation
     or some combination. The input format for specifying each wave segment is
     (duration, frequency, amplitude, relative phase). The phase for each wave
@@ -32,9 +33,9 @@ def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
 
     Parameters
     ----------
-    wave_segments : 1D array-like of 4-tuples
+    wave_segments : 1D array-like of 5-tuples
         Each tuple represents a single wave segment, with the duration,
-        frequency, amplitude, and the phase shift (relative to the previous
+        frequency, amplitude, and phase shift (relative to the previous
         segment) specified by the entries in that order. The default is [].
 
     num_pts : positive int
@@ -94,8 +95,9 @@ def wave_write(times, waveform):
     '''
     index = 0
     
-    # THIS WILL APPEND TO EXISTING FILES NAMED WAVEFORM_PWL.TXT!!
-    wavefile = open('waveform_pwl.txt', 'a')
+    
+    # THIS WILL DELETE EXISTING FILES NAMED WAVEFORM_PWL.TXT!!
+    wavefile = open(f'waveform_pwl_{case}.txt', 'w')
     
     for time in times:
         wavefile.write(f'{time}\t{waveform[index]}\n')
@@ -109,40 +111,54 @@ def wave_write(times, waveform):
 if __name__ == '__main__':
     waves = []
 
-    # Example of frequency modulation
+    # PWL Case
     waves.append(
-        [(0.001, 4000, 1, 0), (0.002, 2000, 1, 0), (0.005, 3000, 1, 0)]
+        [(0.001, 4000, 0.5, 0), (0.002, 2000, 0.5, 0), (0.005, 3000, 0.5, 0)]
     )
+    
+    # # Example of normal sine wave
+    # waves.append(
+    #     [(0.008, 2000, 0.5, 0)]
+    # )
+    
+    # # Example of frequency modulation
+    # waves.append(
+    #     [(0.001, 4000, 1, 0), (0.002, 2000, 1, 0), (0.005, 3000, 1, 0)]
+    # )
 
-    # Example of phase modulation
-    waves.append(
-        [(0.001, 2000, 1, 0), (0.001, 2000, 1, 180), (0.001, 2000, 1, 270)]
-    )
+    # # Example of phase modulation
+    # waves.append(
+    #     [(0.001, 2000, 1, 0), (0.001, 2000, 1, 180), (0.001, 2000, 1, 270)]
+    # )
 
-    # Example of amplitude modulation
-    waves.append(
-        [(0.001, 2000, 3.5, 0), (0.001, 2000, 25, 0), (0.001, 2000, 10, 0)]
-    )
+    # # Example of amplitude modulation
+    # waves.append(
+    #     [(0.001, 2000, 3.5, 0), (0.001, 2000, 25, 0), (0.001, 2000, 10, 0)]
+    # )
 
-    # Example of mixed amplitude and phase modulation
-    waves.append(
-        [(0.001, 2000, 5.6, 0), (0.001, 2000, 12, 180), (0.001, 2000, 29, 0)]
-    )
+    # # Example of mixed amplitude and phase modulation
+    # waves.append(
+    #     [(0.001, 2000, 5.6, 0), (0.001, 2000, 12, 180), (0.001, 2000, 29, 0)]
+    # )
 
-    # Example of mixed amplitude and frequency modulation
-    waves.append(
-        [(0.001, 4000, 3, 0), (0.002, 2000, 1.6, 0), (0.005, 3000, 6, 0)]
-    )
+    # # Example of mixed amplitude and frequency modulation
+    # waves.append(
+    #     [(0.001, 4000, 3, 0), (0.002, 2000, 1.6, 0), (0.005, 3000, 6, 0)]
+    # )
 
     # Generate and plot example waveforms.
     for wave in waves:
         times, waveform = wave_gen(wave)
+        
+        # # Add DC offset
+        # waveform += 0.5
 
         # Plot test output.
         plt.figure()
-        plt.plot(times, waveform, label='Combined Waveform')
+        plt.plot(times, waveform, label=f'Case {case}')
+        plt.legend(loc='best')
         plt.legend
         plt.show()
         
-    times, waveform = wave_gen(waves[1])
+    times, waveform = wave_gen(waves[0])
     wave_write(times, waveform)
