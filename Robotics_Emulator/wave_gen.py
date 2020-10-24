@@ -14,8 +14,9 @@ TODO: Fix FM generator to match this one.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
-case = 'test'
+case = '5.1'
 
 def wave_gen(wave_segments=[], num_pts=1000, smoothing="None"):
     """
@@ -113,8 +114,9 @@ if __name__ == '__main__':
 
     # PWL Case
     waves.append(
-        [(0.001, 4000, 0.5, 0), (0.002, 2000, 0.5, 0), (0.005, 3000, 0.5, 0)]
+        [(0.001, 2000, 0.5, 0), (0.001, 2000, 0.5, 90), (0.001, 2000, 0.5, 180), (0.001, 2000, 0.5, 0), (0.002, 2000, 0.5, 270), (0.002, 2000, 0.5, 90)]
     )
+
     
     # # Example of normal sine wave
     # waves.append(
@@ -152,6 +154,11 @@ if __name__ == '__main__':
         
         # # Add DC offset
         # waveform += 0.5
+        
+        # # Add random noise
+        # random.seed()
+        # for i in range(waveform.size):
+        #     waveform[i] += (random.random()/5)-0.1
 
         # Plot test output.
         plt.figure()
@@ -159,6 +166,18 @@ if __name__ == '__main__':
         plt.legend(loc='best')
         plt.legend
         plt.show()
-        
+    
+    # # Combine waveforms
+    # times1, waveform1 = wave_gen(waves[0])
+    # times2, waveform2 = wave_gen(waves[1])
+    
+    # Plot test output.
+    plt.figure()
+    plt.plot(times, waveform, label=f'Case {case}')
+    plt.legend(loc='best')
+    plt.legend
+    plt.show()
+    
+    
     times, waveform = wave_gen(waves[0])
     wave_write(times, waveform)
